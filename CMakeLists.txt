@@ -11,6 +11,9 @@ include(cmake/cxx_func.cmake)
 find_package(PkgConfig REQUIRED)
 
 set(sub_lib hello)
-Add_CXX_Sub_Library(${sub_lib} "src/*.c" "./include" "")
+Add_CXX_Sub_Library(${sub_lib} ${output_path_libs} ""
+    "src/*.c" "./include;/usr/include" "" "")
 
-Compile_CXX_Test("tests/*.c" "./include" "${sub_lib}_static" "${sub_lib}" "")
+set(debug_opts "-g")
+Compile_CXX_Unit_Tests("tests/*.c" ${output_path_test}
+    "${sub_lib}_static" "./include" "" "${debug_opts}")

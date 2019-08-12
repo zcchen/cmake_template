@@ -1,51 +1,75 @@
-function(Add_CXX_Sub_Library name src_files inc_path libs)
-    if(output_path_libs)
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${output_path_lib})
-        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${output_path_lib})
-    else()
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/lib)
-        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/lib)
-    endif()
-    file(GLOB_RECURSE src "${src_files}")
+function(Add_CXX_Sub_Library name output_path deps
+         src_files inc_path libs options)
+    set(name_static ${name}_static)
+    set(name_shared ${name}_shared)
+    set(src)
+    foreach(s IN ITEMS ${src_files})
+        file(GLOB_RECURSE _s ${s})
+        list(APPEND src ${_s})
+    endforeach(s)
 
-    add_library(${name}_shared SHARED ${src})
-    target_include_directories(${name}_shared PUBLIC ${inc_path})
-    target_link_libraries(${name}_shared ${libs})
-    set_target_properties(${name}_shared PROPERTIES OUTPUT_NAME ${name})
+    add_library(${name_shared} SHARED ${src})
+    foreach(dep IN ITEMS ${deps})
+        add_dependencies(${name_shared} ${dep})
+    endforeach(dep)
+    foreach(inc IN ITEMS ${inc_path})
+        target_include_directories(${name_shared} PUBLIC ${inc})
+    endforeach(inc)
+    foreach(lib IN ITEMS ${libs})
+        target_link_libraries(${name_shared} ${lib})
+    endforeach(lib)
+    set_target_properties(${name_shared}
+        PROPERTIES
+        OUTPUT_NAME ${name}
+        LIBRARY_OUTPUT_DIRECTORY ${output_path}
+        )
+    target_compile_options(${name_shared} PUBLIC ${options})
 
-    add_library(${name}_static STATIC ${src})
-    target_include_directories(${name}_static PUBLIC ${inc_path})
-    target_link_libraries(${name}_static ${libs})
-    set_target_properties(${name}_static PROPERTIES OUTPUT_NAME ${name})
-    unset(src)
+    add_library(${name_static} STATIC ${src})
+    foreach(dep IN ITEMS ${deps})
+        add_dependencies(${name_static} ${dep})
+    endforeach(dep)
+    foreach(inc IN ITEMS ${inc_path})
+        target_include_directories(${name_static} PUBLIC ${inc})
+    endforeach(inc)
+    foreach(lib IN ITEMS ${libs})
+        target_link_libraries(${name_static} ${lib})
+    endforeach(lib)
+    set_target_properties(${name_static}
+        PROPERTIES OUTPUT_NAME ${name}
+        ARCHIVE_OUTPUT_DIRECTORY ${output_path}
+        )
+    target_compile_options(${name_static} PUBLIC ${options})
 endfunction()
 
-function(Add_CXX_Unit_Test name test_src inc_path deps libs options)
+function(Add_CXX_Unit_Test name output_path deps
+         test_src inc_path libs options)
     set(test_obj test_${name})
-    if(output_path_test)
-        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${output_path_test})
-    else()
-        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/test)
-    endif()
-    if(output_path_libs)
-        link_directories(${CMAKE_BINARY_DIR}/${output_path_lib})
-    else()
-        link_directories(${CMAKE_BINARY_DIR}/${PROJECT_NAME}/lib)
-    endif()
+
     add_executable(${test_obj} ${test_src})
-    add_dependencies(${test_obj} ${deps})
-    target_link_libraries(${test_obj} ${libs})
-    target_include_directories(${test_obj} PUBLIC ${inc_path})
+        # only 1 main() in one test.c
+    foreach(dep IN ITEMS ${deps})
+        target_link_libraries(${test_obj} PRIVATE ${dep})
+    endforeach(dep)
+    foreach(inc IN ITEMS ${inc_path})
+        target_include_directories(${test_obj} PUBLIC ${inc})
+    endforeach(inc)
+    foreach(lib IN ITEMS ${libs})
+        target_link_libraries(${test_obj} PUBLIC ${libs})
+    endforeach(lib)
     target_compile_options(${test_obj} PUBLIC ${options})
-    unset(test_obj)
+    set_target_properties(${test_obj}
+        PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${output_path})
 endfunction()
 
-function(Compile_CXX_Test test_files inc_path deps libs options)
+function(Compile_CXX_Unit_Tests test_files output_path
+         deps inc_path libs options)
     file(GLOB_RECURSE test_src "${test_files}")
     foreach(src ${test_src})
         get_filename_component(name ${src} NAME_WE)
-        Add_CXX_Unit_Test("${name}" "${src}" "${inc_path}"
-                          "${deps}" "${libs}" "${options}")
+        Add_CXX_Unit_Test("${name}" "${output_path}" "${deps}"
+                        "${src}" "${inc_path}" "${libs}"
+                        "${options}")
     endforeach(src)
 endfunction()
 
