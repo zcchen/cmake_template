@@ -6,8 +6,14 @@ MAKEFLAGS  += --no-print-directory
 all: $(BUILD_DIR)
 	cd $(BUILD_DIR) && cmake $(pwd) && make
 
+install: ${BUILD_DIR}
+	cd $(BUILD_DIR) && make $@
+
+test: $(BUILD_DIR)
+	cd $(BUILD_DIR) && make $@
+
 clean: $(BUILD_DIR)
-	cd $(BUILD_DIR) && make clean
+	cd $(BUILD_DIR) && make $@
 
 cleanall:
 	-rm -rf $(BUILD_DIR)

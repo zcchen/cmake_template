@@ -1,0 +1,16 @@
+#MESSAGE("PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
+
+#add_executable("hello" hello.c)
+ADD_LIBRARY(hello SHARED hello.c)
+SET_TARGET_PROPERTIES(hello
+    PROPERTIES
+    PUBLIC_HEADER "../include/hello.h"
+    )
+
+INSTALL(TARGETS hello
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib/static
+        PUBLIC_HEADER DESTINATION include
+        )
