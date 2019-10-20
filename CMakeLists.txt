@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.5)
 project(HELLO VERSION 0.0.0 LANGUAGES C CXX)
 
 ######################## Global CMake Flags Here #####################
-SET(DEBUG FALSE)
+SET(DEBUG TRUE)
 SET(RELEASE FALSE)
 
-SET(CMAKE_C_COMPILER g++)
-SET(CMAKE_C_FLAGS "-Wall -std=c++14")
+SET(CMAKE_C_COMPILER gcc)
+SET(CMAKE_C_FLAGS "-Wall -std=c99")
 SET(CMAKE_CXX_COMPILER g++)
 SET(CMAKE_CXX_FLAGS "-Wall -std=c++14")
 ######################################################################
@@ -59,4 +59,7 @@ FIND_PACKAGE(PkgConfig REQUIRED)
 ######################## Running Dependanies Settings ################
 ######################################################################
 
-add_subdirectory("src/")
+ADD_SUBDIRECTORY("src/")
+
+INCLUDE(CTest)
+ADD_SUBDIRECTORY("tests/")

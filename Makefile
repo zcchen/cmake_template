@@ -4,9 +4,12 @@ pwd         = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 MAKEFLAGS  += --no-print-directory
 
 all: $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake $(pwd) && make VERBOSE=2
+	cd $(BUILD_DIR) && cmake $(pwd) && make
 
-install: ${BUILD_DIR} all
+install: ${BUILD_DIR}
+	cd $(BUILD_DIR) && make $@
+
+test: $(BUILD_DIR)
 	cd $(BUILD_DIR) && make $@
 
 clean: $(BUILD_DIR)
