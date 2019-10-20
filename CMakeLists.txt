@@ -1,19 +1,62 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
+project(HELLO VERSION 0.0.0 LANGUAGES C CXX)
 
-project(HELLO C CXX)
+######################## Global CMake Flags Here #####################
+SET(DEBUG FALSE)
+SET(RELEASE FALSE)
 
-set(output_path_libs ${PROJECT_NAME}/lib)
-set(output_path_test ${PROJECT_NAME}/test)
-set(output_path_bin  ${PROJECT_NAME}/bin)
+SET(CMAKE_C_COMPILER g++)
+SET(CMAKE_C_FLAGS "-Wall -std=c++14")
+SET(CMAKE_CXX_COMPILER g++)
+SET(CMAKE_CXX_FLAGS "-Wall -std=c++14")
+######################################################################
 
-include(cmake/cxx_func.cmake)
+######################## Path Settings ###############################
+SET(CMAKE_INSTALL_PREFIX "/usr/local")
+SET(CMAKE_MODULE_PATH "cmake")
+######################################################################
 
-find_package(PkgConfig REQUIRED)
+######################## Compiler Flags Settings #####################
+FIND_PROGRAM(_CHECK_C_COMPILER ${CMAKE_C_COMPILER})
+IF (NOT _CHECK_C_COMPILER)
+    MESSAGE(FATAL_ERROR
+            "Compiler <${CMAKE_C_COMPILER}> could not be found.")
+ELSE ()
+    SET (CMAKE_C_COMPILER ${_CHECK_C_COMPILER})
+ENDIF ()
+MESSAGE(">>> Using <${CMAKE_C_COMPILER}> as C Compiler.")
+IF (${DEBUG} AND ${RELEASE})
+    MESSAGE(FATAL_ERROR "Flag DEBUG & RELEASE could not be both TRUE.")
+ELSEIF (${DEBUG} AND NOT ${RELEASE})
+    STRING(APPEND CMAKE_C_FLAGS " ${CMAKE_C_FLAGS_DEBUG}")
+ELSEIF (NOT ${DEBUG} AND ${RELEASE})
+    STRING(APPEND CMAKE_C_FLAGS " ${CMAKE_C_FLAGS_RELEASE}")
+ENDIF ()
 
-set(sub_lib hello)
-Add_CXX_Sub_Library(${sub_lib} ${output_path_libs} ""
-    "src/*.c" "./include;/usr/include" "" "")
+FIND_PROGRAM(_CHECK_CXX_COMPILER ${CMAKE_CXX_COMPILER})
+IF (NOT _CHECK_CXX_COMPILER)
+    MESSAGE(FATAL_ERROR
+            "Compiler <${CMAKE_CXX_COMPILER}> could not be found.")
+ELSE ()
+    SET (CMAKE_CXX_COMPILER ${_CHECK_CXX_COMPILER})
+ENDIF ()
+MESSAGE(">>> Using <${CMAKE_CXX_COMPILER}> as CXX Compiler.")
+IF (${DEBUG} AND ${RELEASE})
+    MESSAGE(FATAL_ERROR "Flag DEBUG & RELEASE could not be both TRUE.")
+ELSEIF (${DEBUG} AND NOT ${RELEASE})
+    STRING(APPEND CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS_DEBUG}")
+ELSEIF (NOT ${DEBUG} AND ${RELEASE})
+    STRING(APPEND CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS_RELEASE}")
+ENDIF ()
+######################################################################
 
-set(debug_opts "-g")
-Compile_CXX_Unit_Tests("tests/*.c" ${output_path_test}
-    "${sub_lib}_static" "./include" "" "${debug_opts}")
+######################## Building Dependanies Settings ###############
+# Add some packages you need here
+FIND_PACKAGE(Doxygen REQUIRED)
+FIND_PACKAGE(PkgConfig REQUIRED)
+######################################################################
+
+######################## Running Dependanies Settings ################
+######################################################################
+
+add_subdirectory("src/")
