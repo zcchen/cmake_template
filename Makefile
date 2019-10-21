@@ -12,6 +12,9 @@ install: ${BUILD_DIR}
 test: $(BUILD_DIR)
 	cd $(BUILD_DIR) && make $@
 
+memcheck: $(BUILD_DIR)
+	cd $(BUILD_DIR) && ctest -D ExperimentalMemCheck
+
 clean: $(BUILD_DIR)
 	cd $(BUILD_DIR) && make $@
 
